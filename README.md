@@ -14,13 +14,19 @@
     `> pip install -r requirements.txt`
 5. Profit
 
-For more information on how to add modules and documentation on modules check out the AWS [docs](https://docs.aws.amazon.com/cdk/latest/guide/work-with-cdk-python.html).
+For more information on how to add modules and documentation on modules check out the AWS [docs](https://docs.aws.amazon.com/cdk/latest/guide/work-with-cdk-python.html). Make sure any new modules are added to `requirements.txt` with correct versioning. 
 
 ## Synthesize and Deploy
-Stacks can be simply synthesized into Cloudformation templates or directly deployed from the command line.
+Stacks can be simply synthesized into Cloudformation templates or directly deployed from the command line. 
+
+### Bootstrap (do this first)
+`> cdk bootstrap`
 
 ### Synthesize
 `> cdk synth`
 
 ### Deploy
 `> cdk deploy`
+
+### Destroy
+`> cdk destroy`
