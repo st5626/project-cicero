@@ -9,7 +9,6 @@ from aws_cdk import (
     aws_dynamodb as dynamodb,
 )
 
-
 class CiceroStack(cdk.Stack):
     def __init__(self, scope: cdk.Construct, construct_id: str, **kwargs) -> None:
         super().__init__(scope, construct_id, **kwargs)
