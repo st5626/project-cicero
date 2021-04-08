@@ -124,6 +124,12 @@ class CiceroStack(cdk.Stack):
             public_read_access=True,
             removal_policy=cdk.RemovalPolicy.DESTROY,
         )
+        translated_text_bucket = s3.Bucket(
+            self,
+            "TranslateBucket",
+            auto_delete_objects=True,
+            removal_policy=cdk.RemovalPolicy.DESTROY,
+        )
 
         # Initial Video Upload and Transcription
         video_upload_lambda = _lambda.Function(
@@ -181,6 +187,16 @@ class CiceroStack(cdk.Stack):
                 "RECIEVER": "recipient@example.com",
                 "SENDER": "Sender Name <sender@example.com>",
             },
+        # Translate the transcribed text to the targeted language
+        translate_lambda = _lambda.Function(
+            self,
+            "lambda_function",
+            runtime=_lambda.Runtime.PYTHON_3_7,
+            handler="translate.main",
+            timeout=cdk.Duration.seconds(30),
+            code=_lambda.Code.from_asset("./cicero/lambda"),
+            role=lambda_role,
+            environment={"OUTPUT_BUCKET": translated_text_bucket.bucket_name},
         )
 
         # create s3 notification for lambda function
