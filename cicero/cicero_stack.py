@@ -26,6 +26,9 @@ class CiceroStack(cdk.Stack):
                 _iam.ManagedPolicy.from_aws_managed_policy_name(
                     "AmazonTranscribeFullAccess"
                 ),
+                _iam.ManagedPolicy.from_aws_managed_policy_name(
+                    "AmazonSESFullAccess"
+                ),
             ],
         )
 
@@ -66,6 +69,15 @@ class CiceroStack(cdk.Stack):
             removal_policy=cdk.RemovalPolicy.DESTROY,
         )
 
+        # Finished Video Bucket
+        finished_video_bucket = s3.Bucket(
+            self,
+            "FinishedVideoBucket",
+            auto_delete_objects=True,
+            public_read_access=True,
+            removal_policy=cdk.RemovalPolicy.DESTROY,
+        )
+
         # Initial Video Upload and Transcription
         transcribe_lambda = _lambda.Function(
             self,
@@ -78,10 +90,33 @@ class CiceroStack(cdk.Stack):
             environment={"BUCKET": transcribe_bucket.bucket_name},
         )
 
+        # TODO: Email should be pulled from S3 bucket meta data? we will pull from the environment for now
+        # Replace sender@example.com with your "From" address.
+        # This address MUST be verified with Amazon SES.
+
+        # Replace recipient@example.com with a "To" address. If your account 
+        # is still in the sandbox, this address must be verified.
+        sns_lambda = _lambda.Function(
+            self,
+            "sns_lambda_function",
+            runtime=_lambda.Runtime.PYTHON_3_7,
+            handler="sns.main",
+            timeout=cdk.Duration.seconds(30),
+            code=_lambda.Code.from_asset("./cicero/lambda"),
+            role=lambda_role,
+            environment={"RECIEVER": "recipient@example.com", "SENDER": "Sender Name <sender@example.com>"},
+        )
+
         # create s3 notification for lambda function
         notification = aws_s3_notifications.LambdaDestination(transcribe_lambda)
+
+        finished_video_notification = aws_s3_notifications.LambdaDestination(sns_lambda)
 
         # assign notification for the s3 event type
         video_upload_bucket.add_event_notification(
             s3.EventType.OBJECT_CREATED, notification
+        )
+
+        finished_video_bucket.add_event_notification(
+            s3.EventType.OBJECT_CREATED, finished_video_notification
         )
