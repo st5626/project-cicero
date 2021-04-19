@@ -12,7 +12,20 @@
 4. Install packages.
 
     `> pip install -r requirements.txt`
-5. Profit
+
+5. [Verify an email to use for SNS service](https://docs.aws.amazon.com/ses/latest/DeveloperGuide/verify-email-addresses-procedure.html)
+   You can also verify email using boto3
+   ```
+   def verify_email_identity():
+    ses_client = boto3.client("ses", region_name="us-east-2")
+    response = ses_client.verify_email_identity(
+        EmailAddress="abc1234@rit.edu"
+    )
+    print(response)
+    ```
+    This MUST be done for the sender email. The recipiant email must also be verified if you are using SES in sandbox mode.
+
+6. Profit
 
 For more information on how to add modules and documentation on modules check out the AWS [docs](https://docs.aws.amazon.com/cdk/latest/guide/work-with-cdk-python.html). Make sure any new modules are added to `requirements.txt` with correct versioning. 
 
