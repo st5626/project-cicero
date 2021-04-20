@@ -7,7 +7,6 @@ from aws_cdk import (
     aws_s3_deployment as s3_deployment,
 )
 
-
 class CiceroStack(cdk.Stack):
     def __init__(self, scope: cdk.Construct, construct_id: str, **kwargs) -> None:
         super().__init__(scope, construct_id, **kwargs)
@@ -27,6 +26,9 @@ class CiceroStack(cdk.Stack):
                     "AmazonTranscribeFullAccess"
                 ),
                 _iam.ManagedPolicy.from_aws_managed_policy_name(
+                    "AmazonPollyFullAccess"
+                ),
+                _iam.ManagedPolicy.from_aws_managed_policy_name(      
                     "AmazonSESFullAccess"
                 ),
             ],
@@ -68,6 +70,18 @@ class CiceroStack(cdk.Stack):
             auto_delete_objects=True,
             removal_policy=cdk.RemovalPolicy.DESTROY,
         )
+        # translated_bucket = s3.Bucket(
+        #     self,
+        #     "TranslatedBucket",
+        #     auto_delete_objects=True,
+        #     removal_policy=cdk.RemovalPolicy.DESTROY,
+        # )
+        translated_audio_bucket = s3.Bucket(
+            self,
+            "TranslatedAudioBucket",
+            auto_delete_objects=True,
+            removal_policy=cdk.RemovalPolicy.DESTROY,
+        )
 
         # Finished Video Bucket
         finished_video_bucket = s3.Bucket(
@@ -90,6 +104,18 @@ class CiceroStack(cdk.Stack):
             environment={"BUCKET": transcribe_bucket.bucket_name},
         )
 
+        # Convert translated transcript to translated voice over
+        polly_lambda = _lambda.Function(
+            self,
+            "polly_lambda_function",
+            runtime=_lambda.Runtime.PYTHON_3_7,
+            handler="polly.main",
+            timeout=cdk.Duration.seconds(30),
+            code=_lambda.Code.from_asset("./cicero/lambda"),
+            role=lambda_role,
+            environment={"OUTPUT_BUCKET": translated_audio_bucket.bucket_name},
+        )
+
         # TODO: Email should be pulled from S3 bucket meta data? we will pull from the environment for now
         # Replace sender@example.com with your "From" address.
         # This address MUST be verified with Amazon SES.
@@ -110,11 +136,19 @@ class CiceroStack(cdk.Stack):
         # create s3 notification for lambda function
         notification = aws_s3_notifications.LambdaDestination(transcribe_lambda)
 
+        # create s3 notification for lambda function
+        new_translation_notification = aws_s3_notifications.LambdaDestination(polly_lambda)
         finished_video_notification = aws_s3_notifications.LambdaDestination(sns_lambda)
 
         # assign notification for the s3 event type
         video_upload_bucket.add_event_notification(
             s3.EventType.OBJECT_CREATED, notification
+        )
+
+        # TODO: Replace actual line with commented out line when actual transcripts are made
+        # translated_bucket.add_event_notification(
+        transcribe_bucket.add_event_notification(
+            s3.EventType.OBJECT_CREATED, new_translation_notification
         )
 
         finished_video_bucket.add_event_notification(
