@@ -13,7 +13,8 @@ def main(event, context):
     content_object = s3.Object(bucket, key)
     file_content = content_object.get()['Body'].read().decode('utf-8')
     json_content = json.loads(file_content)
-    textToSynthesize = json_content['results']['transcripts'][0]['transcript']
+    # textToSynthesize = json_content['results']['transcripts'][0]['transcript']
+    textToSynthesize = json_content['TranslatedText']
     output_bucket = os.getenv('OUTPUT_BUCKET')
 
     synthesis_task = polly.start_speech_synthesis_task(

@@ -102,12 +102,12 @@ class CiceroStack(cdk.Stack):
             auto_delete_objects=True,
             removal_policy=cdk.RemovalPolicy.DESTROY,
         )
-        # translated_bucket = s3.Bucket(
-        #     self,
-        #     "TranslatedBucket",
-        #     auto_delete_objects=True,
-        #     removal_policy=cdk.RemovalPolicy.DESTROY,
-        # )
+        translated_bucket = s3.Bucket(
+            self,
+            "TranslatedTranscriptBucket",
+            auto_delete_objects=True,
+            removal_policy=cdk.RemovalPolicy.DESTROY,
+        )
         translated_audio_bucket = s3.Bucket(
             self,
             "TranslatedAudioBucket",
@@ -147,7 +147,7 @@ class CiceroStack(cdk.Stack):
         video_table.grant_write_data(video_upload_lambda)
         transcribe_lambda = _lambda.Function(
             self,
-            "lambda_function",
+            "translate_lambda_function",
             runtime=_lambda.Runtime.PYTHON_3_7,
             handler="transcribe.main",
             timeout=cdk.Duration.seconds(30),
@@ -198,14 +198,15 @@ class CiceroStack(cdk.Stack):
             environment={"OUTPUT_BUCKET": translated_text_bucket.bucket_name},
         )
 
-        # create s3 notification for lambda function
-        notification = aws_s3_notifications.LambdaDestination(transcribe_lambda)
-
-        # create s3 notification for lambda function
-        new_translation_notification = aws_s3_notifications.LambdaDestination(
-            polly_lambda
-        )
         finished_video_notification = aws_s3_notifications.LambdaDestination(sns_lambda)
+        # create s3 notification for transcribe lambda function
+        transcribe_notification = aws_s3_notifications.LambdaDestination(transcribe_lambda)
+
+        # create s3 notification for translate lambda function
+        translate_notification = aws_s3_notifications.LambdaDestination(translate_lambda)
+
+        # create s3 notification for polly lambda function
+        polly_notification = aws_s3_notifications.LambdaDestination(polly_lambda)
 
         # API Gateway add route
         video_upload_integration = apigateway.LambdaIntegration(
@@ -215,13 +216,15 @@ class CiceroStack(cdk.Stack):
         api.root.add_method("POST", video_upload_integration)
         # assign notification for the s3 event type
         video_upload_bucket.add_event_notification(
-            s3.EventType.OBJECT_CREATED, notification
+            s3.EventType.OBJECT_CREATED, transcribe_notification
         )
 
-        # TODO: Replace actual line with commented out line when actual transcripts are made
-        # translated_bucket.add_event_notification(
         transcribe_bucket.add_event_notification(
-            s3.EventType.OBJECT_CREATED, new_translation_notification
+            s3.EventType.OBJECT_CREATED, translate_notification
+        )
+
+        translated_bucket.add_event_notification(
+            s3.EventType.OBJECT_CREATED, polly_notification
         )
 
         finished_video_bucket.add_event_notification(
