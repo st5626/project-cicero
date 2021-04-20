@@ -4,7 +4,6 @@ import json
 
 dynamodb = boto3.resource("dynamodb")
 
-
 def main(event, context):
     _json = json.loads(event["body"])
     filename = _json["filename"]
