@@ -182,6 +182,7 @@ class CiceroStack(cdk.Stack):
                 "RECIEVER": "recipient@example.com",
                 "SENDER": "Sender Name <sender@example.com>",
             },
+        
         # Translate the transcribed text to the targeted language
         translate_lambda = _lambda.Function(
             self,
