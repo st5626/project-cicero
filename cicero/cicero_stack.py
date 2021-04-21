@@ -20,17 +20,12 @@ class CiceroStack(cdk.Stack):
             assumed_by=_iam.ServicePrincipal("lambda.amazonaws.com"),
             role_name="cdk-lambda-role",
             managed_policies=[
-                _iam.ManagedPolicy.from_aws_managed_policy_name(
-                    "service-role/AWSLambdaBasicExecutionRole"
-                ),
+                _iam.ManagedPolicy.from_aws_managed_policy_name("service-role/AWSLambdaBasicExecutionRole"),
                 _iam.ManagedPolicy.from_aws_managed_policy_name("AmazonS3FullAccess"),
-                _iam.ManagedPolicy.from_aws_managed_policy_name(
-                    "AmazonTranscribeFullAccess"
-                ),
-                _iam.ManagedPolicy.from_aws_managed_policy_name(
-                    "AmazonPollyFullAccess"
-                ),
                 _iam.ManagedPolicy.from_aws_managed_policy_name("AmazonSESFullAccess"),
+                _iam.ManagedPolicy.from_aws_managed_policy_name("AmazonTranscribeFullAccess"),
+                _iam.ManagedPolicy.from_aws_managed_policy_name("TranslateReadOnly"),
+                _iam.ManagedPolicy.from_aws_managed_policy_name("AmazonPollyFullAccess"),
             ],
         )
 
