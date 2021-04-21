@@ -13,7 +13,8 @@ def main(event, context):
     bucket = record['s3']['bucket']['name']
     key = record['s3']['object']['key']
     job_uri = f"s3://{bucket}/{key}"
-    job_name = f"Video_Transcribe_Job_{uuid.uuid4()}"
+    # job_name = f"Video_Transcribe_Job_{uuid.uuid4()}"
+    job_name = uuid.uuid4()
     output_bucket = os.getenv('BUCKET')
 
     transcribe.start_transcription_job(
