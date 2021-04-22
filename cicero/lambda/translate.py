@@ -14,8 +14,11 @@ def main(event, context):
     key = record['s3']['object']['key']
 
     content_object = s3.Object(bucket, key)
+    logger.info(content_object)
     file_content = content_object.get()['Body'].read().decode('utf-8')
+    logger.info(file_content)
     json_content = json.loads(file_content)
+    logger.info(json_content)
     textToSynthesize = json_content['results']['transcripts'][0]['transcript']
     job_name = json_content["jobName"]
     output_bucket = os.getenv('OUTPUT_BUCKET')

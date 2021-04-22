@@ -1,18 +1,23 @@
 import boto3
 import json
 import os
+import logging
 
 def main(event, context):
     polly = boto3.client('polly')
     s3 = boto3.resource('s3')
-
+    logger = logging.getLogger()
+    logger.setLevel(logging.INFO)
     record = event['Records'][0]
+    logger.info(record)
     bucket = record['s3']['bucket']['name']
     key = record['s3']['object']['key']
-
+    
     content_object = s3.Object(bucket, key)
+    logger.info(content_object)
     file_content = content_object.get()['Body'].read().decode('utf-8')
     json_content = json.loads(file_content)
+    logger.info(json_content)
     # textToSynthesize = json_content['results']['transcripts'][0]['transcript']
     # job_name = json_content["jobName"]
     textToSynthesize = json_content['TranslatedText']
