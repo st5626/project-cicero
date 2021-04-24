@@ -110,6 +110,12 @@ class CiceroStack(cdk.Stack):
             auto_delete_objects=True,
             removal_policy=cdk.RemovalPolicy.DESTROY,
         )
+        finished_video_bucket = s3.Bucket(
+            self,
+            "FinishedVideoBucket",
+            auto_delete_objects=True,
+            removal_policy=cdk.RemovalPolicy.DESTROY,
+        )
 
         # Finished Video Bucket
         finished_video_bucket = s3.Bucket(
