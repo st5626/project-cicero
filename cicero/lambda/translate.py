@@ -30,8 +30,8 @@ def main(event, context):
             'filename': key,
         }
     )
-    SOURCE_LANGUAGE = table_record['input_language'][:2]
-    TARGET_LANGUAGE = table_record['target_language']
+    SOURCE_LANGUAGE = table_record['Item']['input_language'][:2]
+    TARGET_LANGUAGE = table_record['Item']['target_language']
     textToSynthesize = json_content['results']['transcripts'][0]['transcript']
     lastPronunIdx = len(json_content['results']['items']) - 1
     # Get last pronunciation

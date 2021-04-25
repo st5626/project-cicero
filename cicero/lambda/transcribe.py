@@ -24,7 +24,8 @@ def main(event, context):
             'filename': key,
         }
     )
-    input_language = table_record["input_language"]
+    
+    input_language = table_record['Item']["input_language"]
     transcribe.start_transcription_job(
         TranscriptionJobName=job_name,
         OutputBucketName=output_bucket,

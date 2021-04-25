@@ -27,6 +27,7 @@ class CiceroStack(cdk.Stack):
                 _iam.ManagedPolicy.from_aws_managed_policy_name("AmazonTranscribeFullAccess"),
                 _iam.ManagedPolicy.from_aws_managed_policy_name("TranslateReadOnly"),
                 _iam.ManagedPolicy.from_aws_managed_policy_name("AmazonPollyFullAccess"),
+                _iam.ManagedPolicy.from_aws_managed_policy_name("AmazonDynamoDBReadOnlyAccess"),
             ],
         )
 

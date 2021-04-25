@@ -16,7 +16,7 @@ def main(event, context):
             'filename': key,
         }
     )
-    TARGET_LANGUAGE = table_record["target_language"]
+    TARGET_LANGUAGE = table_record['Item']["target_language"]
     logger = logging.getLogger()
     logger.setLevel(logging.INFO)
     record = event['Records'][0]
