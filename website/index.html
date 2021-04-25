@@ -1,11 +1,93 @@
 <!DOCTYPE html>
 <html>
-<head>
-    <title>Project Cicero</title>
-</head>
-<body>
+	<head>
+		<title>Project Cicero</title>
+		<!-- Compiled and minified CSS -->
+		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css" />
 
-<h1>Project Cicero</h1>
+		<!-- Compiled and minified JavaScript -->
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+		<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
+	</head>
+	<body>
+		<nav style="background-color: dodgerblue">
+			<div class="nav-wrapper">
+				<a href="#" class="brand-logo">Cicero</a>
+			</div>
+		</nav>
+		<div class="container">
+			<div class="input-field col s6">
+				<input id="api_url_input" type="text" class="validate" />
+				<label class="active" for="api_url_input">API URL</label>
+			</div>
+			<div class="input-field col s6">
+				<input id="email_input" type="text" class="validate" />
+				<label class="active" for="email_input">Return Email</label>
+			</div>
+			<div class="input-field col s6">
+				<input id="language_input" type="text" class="validate" />
+				<label class="active" for="language_input">Language</label>
+			</div>
+			<div class="row">
+				<form>
+					<div class="file-field input-field">
+						<div class="btn">
+							<span>File</span>
+							<input id="file_input" type="file" />
+						</div>
+						<div class="file-path-wrapper">
+							<input class="file-path validate" type="text" />
+						</div>
+					</div>
+				</form>
+				<button class="btn waves-effect waves-light" onclick="submit()" name="action">
+					Submit
+					<i class="material-icons right">send</i>
+				</button>
+			</div>
+		</div>
+		<script>
+			async function submit() {
+				const lang = document.getElementById('language_input');
+				const video_input = document.getElementById('file_input');
+				const email = document.getElementById('email_input');
+				const api_url = document.getElementById('api_url_input');
 
-</body>
+				var reader = new FileReader();
+				var text = await video_input.files[0].arrayBuffer();
+				reader.onload = function (e) {
+					fetch(api_url.value, {
+						method: 'POST',
+						headers: { 'Content-Type': 'application/json' },
+						body: JSON.stringify({ filename: video_input.files[0].name, language: lang.value, email: email.value }),
+					})
+						.then((response) => {
+							response.text().then((text) => {
+								var body = new FormData();
+								body.append('file', video_input.files[0]);
+								fetch(text, {
+									method: 'PUT',
+									body: reader.result,
+									headers: {
+										'Content-Length': video_input.files[0].size,
+									},
+								})
+									.then((response) => alert('Video Uploaded'))
+									.then((result) => {
+										console.log('Success:', result);
+									})
+									.catch((error) => {
+										console.error('Error:', error);
+									});
+							});
+						})
+						.catch((error) => console.log(error));
+				};
+				reader.onerror = function (e) {
+					console.log('Error : ' + e.type);
+				};
+				reader.readAsArrayBuffer(video_input.files[0]);
+			}
+		</script>
+	</body>
 </html>

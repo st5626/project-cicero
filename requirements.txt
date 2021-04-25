@@ -2,3 +2,5 @@ aws-cdk.aws-s3==1.94.1
 aws-cdk.aws-lambda==1.94.1
 aws_cdk.aws_s3_deployment==1.94.1
 aws_cdk.aws_s3_notifications==1.94.1
+aws_cdk.aws_apigateway==1.94.1
+aws_cdk.aws_dynamodb==1.94.1
