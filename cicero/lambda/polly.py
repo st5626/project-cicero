@@ -4,10 +4,19 @@ import logging
 
 def main(event, context):
 
-    TARGET_LANGUAGE = "de"
+    # TARGET_LANGUAGE = "de"
 
     polly = boto3.client('polly')
     s3 = boto3.resource('s3')
+    dynamodb = boto3.resource("dynamodb")
+    table_name = os.getenv("TABLE")
+    table = dynamodb.Table(table_name)
+    table_record = table.get_item(
+        Key={
+            'filename': key,
+        }
+    )
+    TARGET_LANGUAGE = table_record["target_language"]
     logger = logging.getLogger()
     logger.setLevel(logging.INFO)
     record = event['Records'][0]

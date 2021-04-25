@@ -155,9 +155,27 @@ class CiceroStack(cdk.Stack):
             timeout=cdk.Duration.seconds(30),
             code=_lambda.Code.from_asset("./cicero/lambda"),
             role=lambda_role,
-            environment={"BUCKET": transcribe_bucket.bucket_name},
+            environment={
+                "BUCKET": transcribe_bucket.bucket_name,
+                "TABLE": video_table.table_name,
+            },
         )
 
+        # Translate the transcribed text to the targeted language
+        translate_lambda = _lambda.Function(
+            self,
+            "translate_lambda_function",
+            runtime=_lambda.Runtime.PYTHON_3_7,
+            handler="translate.main",
+            timeout=cdk.Duration.seconds(30),
+            code=_lambda.Code.from_asset("./cicero/lambda"),
+            role=lambda_role,
+            environment={
+                "OUTPUT_BUCKET": translated_bucket.bucket_name,
+                "TABLE": video_table.table_name,
+            },
+        )
+        
         # Convert translated transcript to translated voice over
         polly_lambda = _lambda.Function(
             self,
@@ -167,7 +185,10 @@ class CiceroStack(cdk.Stack):
             timeout=cdk.Duration.seconds(30),
             code=_lambda.Code.from_asset("./cicero/lambda"),
             role=lambda_role,
-            environment={"OUTPUT_BUCKET": translated_audio_bucket.bucket_name},
+            environment={
+                "OUTPUT_BUCKET": translated_audio_bucket.bucket_name,
+                "TABLE": video_table.table_name,
+            },
         )
 
         # TODO: Email should be pulled from S3 bucket meta data? we will pull from the environment for now
@@ -188,17 +209,6 @@ class CiceroStack(cdk.Stack):
                 "RECIEVER": "recipient@example.com",
                 "SENDER": "Sender Name <sender@example.com>",
             },
-        
-        # Translate the transcribed text to the targeted language
-        translate_lambda = _lambda.Function(
-            self,
-            "lambda_function",
-            runtime=_lambda.Runtime.PYTHON_3_7,
-            handler="translate.main",
-            timeout=cdk.Duration.seconds(30),
-            code=_lambda.Code.from_asset("./cicero/lambda"),
-            role=lambda_role,
-            environment={"OUTPUT_BUCKET": translated_text_bucket.bucket_name},
         )
 
         finished_video_notification = aws_s3_notifications.LambdaDestination(sns_lambda)

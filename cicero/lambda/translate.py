@@ -5,11 +5,12 @@ import logging
 import re
 
 def main(event, context):
-    SOURCE_LANGUAGE = "en"
-    TARGET_LANGUAGE = "de"
+    # SOURCE_LANGUAGE = "en"
+    # TARGET_LANGUAGE = "de"
 
     translate = boto3.client('translate')
     s3 = boto3.resource('s3')
+    dynamodb = boto3.resource("dynamodb")
     logger = logging.getLogger()
     logger.setLevel(logging.INFO)
     record = event['Records'][0]
@@ -22,6 +23,15 @@ def main(event, context):
     logger.info("file_content: " + file_content)
     json_content = json.loads(file_content)
     logger.info(json_content)
+    table_name = os.getenv("TABLE")
+    table = dynamodb.Table(table_name)
+    table_record = table.get_item(
+        Key={
+            'filename': key,
+        }
+    )
+    SOURCE_LANGUAGE = table_record['input_language'][:2]
+    TARGET_LANGUAGE = table_record['target_language']
     textToSynthesize = json_content['results']['transcripts'][0]['transcript']
     lastPronunIdx = len(json_content['results']['items']) - 1
     # Get last pronunciation
