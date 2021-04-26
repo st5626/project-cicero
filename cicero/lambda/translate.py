@@ -7,31 +7,34 @@ import re
 def main(event, context):
     # SOURCE_LANGUAGE = "en"
     # TARGET_LANGUAGE = "de"
-
     translate = boto3.client('translate')
     s3 = boto3.resource('s3')
     dynamodb = boto3.resource("dynamodb")
     logger = logging.getLogger()
     logger.setLevel(logging.INFO)
+    logger.info(event)
+
     record = event['Records'][0]
     bucket = record['s3']['bucket']['name']
     key = record['s3']['object']['key']
-
+    logger.info(key)
     content_object = s3.Object(bucket, key)
     logger.info(content_object)
     file_content = content_object.get()['Body'].read().decode('utf-8')
     logger.info("file_content: " + file_content)
     json_content = json.loads(file_content)
     logger.info(json_content)
+    lookup_uuid = key.split('.')[0]
     table_name = os.getenv("TABLE")
     table = dynamodb.Table(table_name)
     table_record = table.get_item(
         Key={
-            'filename': key,
+            'uuid': lookup_uuid,
         }
     )
+    logger.info(table_record)
     SOURCE_LANGUAGE = table_record['Item']['input_language'][:2]
-    TARGET_LANGUAGE = table_record['Item']['target_language']
+    TARGET_LANGUAGE = table_record['Item']['target_language'][:2]
     textToSynthesize = json_content['results']['transcripts'][0]['transcript']
     lastPronunIdx = len(json_content['results']['items']) - 1
     # Get last pronunciation
@@ -59,8 +62,8 @@ def main(event, context):
     srtContent = writeSRT( phrases )
 
     logger.info(srtContent)
-    output_json_name = job_name + ".srt"
-    s3object = s3.Object(output_bucket, output_json_name)
+    output_name = job_name + ".srt"
+    s3object = s3.Object(output_bucket, output_name)
     s3object.put(
         Body=(bytes(srtContent.encode('utf-8')))
     )

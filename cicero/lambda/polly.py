@@ -11,19 +11,22 @@ def main(event, context):
     dynamodb = boto3.resource("dynamodb")
     table_name = os.getenv("TABLE")
     table = dynamodb.Table(table_name)
-    table_record = table.get_item(
-        Key={
-            'filename': key,
-        }
-    )
-    TARGET_LANGUAGE = table_record['Item']["target_language"]
+    
     logger = logging.getLogger()
     logger.setLevel(logging.INFO)
     record = event['Records'][0]
     logger.info(record)
     bucket = record['s3']['bucket']['name']
     key = record['s3']['object']['key']
-    
+    lookup_uuid = key.split('.')[0]
+
+    table_record = table.get_item(
+        Key={
+            'uuid': lookup_uuid,
+        }
+    )
+    TARGET_LANGUAGE = table_record['Item']["target_language"]
+
     content_object = s3.Object(bucket, key)
     logger.info(content_object)
     file_content = content_object.get()['Body'].read().decode('utf-8')

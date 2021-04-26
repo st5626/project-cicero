@@ -1,6 +1,7 @@
 import boto3
 import os
 import json
+import uuid
 
 dynamodb = boto3.resource("dynamodb")
 
@@ -13,14 +14,15 @@ def main(event, context):
     bucket = os.getenv("BUCKET")
     table_name = os.getenv("TABLE")
     table = dynamodb.Table(table_name)
-
+    key = str(uuid.uuid4())
     url = boto3.client("s3").generate_presigned_url(
         ClientMethod="put_object",
-        Params={"Bucket": bucket, "Key": filename},
+        Params={"Bucket": bucket, "Key": key},
         ExpiresIn=3600,
     )
 
     table.put_item(Item={
+        "uuid": key,
         "filename": filename, 
         "input_language": input_lang,
         "target_language": target_lang,

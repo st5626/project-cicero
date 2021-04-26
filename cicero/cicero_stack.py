@@ -62,7 +62,7 @@ class CiceroStack(cdk.Stack):
             self,
             "VideoTable",
             partition_key=dynamodb.Attribute(
-                name="filename", type=dynamodb.AttributeType.STRING
+                name="uuid", type=dynamodb.AttributeType.STRING
             ),
         )
 
@@ -234,9 +234,9 @@ class CiceroStack(cdk.Stack):
         )
 
         transcribe_bucket.add_event_notification(
-            s3.EventType.OBJECT_CREATED, translate_notification
+            s3.EventType.OBJECT_CREATED, translate_notification, s3.NotificationKeyFilter(suffix='json')
         )
-
+        
         translated_bucket.add_event_notification(
             s3.EventType.OBJECT_CREATED, polly_notification
         )
