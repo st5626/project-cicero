@@ -105,15 +105,10 @@ class CiceroStack(cdk.Stack):
             auto_delete_objects=True,
             removal_policy=cdk.RemovalPolicy.DESTROY,
         )
+        
         translated_audio_bucket = s3.Bucket(
             self,
             "TranslatedAudioBucket",
-            auto_delete_objects=True,
-            removal_policy=cdk.RemovalPolicy.DESTROY,
-        )
-        finished_video_bucket = s3.Bucket(
-            self,
-            "FinishedVideoBucket",
             auto_delete_objects=True,
             removal_policy=cdk.RemovalPolicy.DESTROY,
         )
@@ -124,12 +119,6 @@ class CiceroStack(cdk.Stack):
             "FinishedVideoBucket",
             auto_delete_objects=True,
             public_read_access=True,
-            removal_policy=cdk.RemovalPolicy.DESTROY,
-        )
-        translated_text_bucket = s3.Bucket(
-            self,
-            "TranslateBucket",
-            auto_delete_objects=True,
             removal_policy=cdk.RemovalPolicy.DESTROY,
         )
 
@@ -150,7 +139,7 @@ class CiceroStack(cdk.Stack):
         video_table.grant_write_data(video_upload_lambda)
         transcribe_lambda = _lambda.Function(
             self,
-            "translate_lambda_function",
+            "transribe_lambda_function",
             runtime=_lambda.Runtime.PYTHON_3_7,
             handler="transcribe.main",
             timeout=cdk.Duration.seconds(30),
