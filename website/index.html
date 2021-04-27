@@ -25,8 +25,12 @@
 				<label class="active" for="email_input">Return Email</label>
 			</div>
 			<div class="input-field col s6">
-				<input id="language_input" type="text" class="validate" />
-				<label class="active" for="language_input">Language</label>
+				<input id="input_language" type="text" class="validate" />
+				<label class="active" for="language_input">Input Language</label>
+			</div>
+			<div class="input-field col s6">
+				<input id="target_language" type="text" class="validate" />
+				<label class="active" for="language_input">Target Language</label>
 			</div>
 			<div class="row">
 				<form>
@@ -48,7 +52,8 @@
 		</div>
 		<script>
 			async function submit() {
-				const lang = document.getElementById('language_input');
+				const input_lang = document.getElementById('input_language');
+				const target_lang = document.getElementById('target_language');
 				const video_input = document.getElementById('file_input');
 				const email = document.getElementById('email_input');
 				const api_url = document.getElementById('api_url_input');
@@ -59,8 +64,12 @@
 					fetch(api_url.value, {
 						method: 'POST',
 						headers: { 'Content-Type': 'application/json' },
-						body: JSON.stringify({ filename: video_input.files[0].name, language: lang.value, email: email.value }),
-					})
+						body: JSON.stringify({ 
+						filename: video_input.files[0].name, 
+						input_language: input_lang.value,
+						target_language: target_lang.value,
+						email: email.value }),
+				})
 						.then((response) => {
 							response.text().then((text) => {
 								var body = new FormData();

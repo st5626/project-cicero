@@ -21,17 +21,13 @@ class CiceroStack(cdk.Stack):
             assumed_by=_iam.ServicePrincipal("lambda.amazonaws.com"),
             role_name="cdk-lambda-role",
             managed_policies=[
-                _iam.ManagedPolicy.from_aws_managed_policy_name(
-                    "service-role/AWSLambdaBasicExecutionRole"
-                ),
+                _iam.ManagedPolicy.from_aws_managed_policy_name("service-role/AWSLambdaBasicExecutionRole"),
                 _iam.ManagedPolicy.from_aws_managed_policy_name("AmazonS3FullAccess"),
-                _iam.ManagedPolicy.from_aws_managed_policy_name(
-                    "AmazonTranscribeFullAccess"
-                ),
-                _iam.ManagedPolicy.from_aws_managed_policy_name(
-                    "AmazonPollyFullAccess"
-                ),
+                _iam.ManagedPolicy.from_aws_managed_policy_name("AmazonTranscribeFullAccess"),
+                _iam.ManagedPolicy.from_aws_managed_policy_name("TranslateReadOnly"),
+                _iam.ManagedPolicy.from_aws_managed_policy_name("AmazonPollyFullAccess"),
                 _iam.ManagedPolicy.from_aws_managed_policy_name("AmazonSESFullAccess"),
+                _iam.ManagedPolicy.from_aws_managed_policy_name("AmazonDynamoDBReadOnlyAccess"),
             ],
         )
 
@@ -66,7 +62,7 @@ class CiceroStack(cdk.Stack):
             self,
             "VideoTable",
             partition_key=dynamodb.Attribute(
-                name="filename", type=dynamodb.AttributeType.STRING
+                name="uuid", type=dynamodb.AttributeType.STRING
             ),
         )
 
@@ -103,25 +99,22 @@ class CiceroStack(cdk.Stack):
             auto_delete_objects=True,
             removal_policy=cdk.RemovalPolicy.DESTROY,
         )
-        # translated_bucket = s3.Bucket(
-        #     self,
-        #     "TranslatedBucket",
-        #     auto_delete_objects=True,
-        #     removal_policy=cdk.RemovalPolicy.DESTROY,
-        # )
+        translated_bucket = s3.Bucket(
+            self,
+            "TranslatedTranscriptBucket",
+            auto_delete_objects=True,
+            removal_policy=cdk.RemovalPolicy.DESTROY,
+        )
         translated_audio_bucket = s3.Bucket(
             self,
             "TranslatedAudioBucket",
             auto_delete_objects=True,
             removal_policy=cdk.RemovalPolicy.DESTROY,
         )
-
-        # Finished Video Bucket
         finished_video_bucket = s3.Bucket(
             self,
             "FinishedVideoBucket",
             auto_delete_objects=True,
-            public_read_access=True,
             removal_policy=cdk.RemovalPolicy.DESTROY,
         )
 
@@ -142,15 +135,33 @@ class CiceroStack(cdk.Stack):
         video_table.grant_write_data(video_upload_lambda)
         transcribe_lambda = _lambda.Function(
             self,
-            "lambda_function",
+            "transcribe_lambda_function",
             runtime=_lambda.Runtime.PYTHON_3_7,
             handler="transcribe.main",
             timeout=cdk.Duration.seconds(30),
             code=_lambda.Code.from_asset("./cicero/lambda"),
             role=lambda_role,
-            environment={"BUCKET": transcribe_bucket.bucket_name},
+            environment={
+                "BUCKET": transcribe_bucket.bucket_name,
+                "TABLE": video_table.table_name,
+            },
         )
 
+        # Translate the transcribed text to the targeted language
+        translate_lambda = _lambda.Function(
+            self,
+            "translate_lambda_function",
+            runtime=_lambda.Runtime.PYTHON_3_7,
+            handler="translate.main",
+            timeout=cdk.Duration.seconds(30),
+            code=_lambda.Code.from_asset("./cicero/lambda"),
+            role=lambda_role,
+            environment={
+                "OUTPUT_BUCKET": translated_bucket.bucket_name,
+                "TABLE": video_table.table_name,
+            },
+        )
+        
         # Convert translated transcript to translated voice over
         polly_lambda = _lambda.Function(
             self,
@@ -160,7 +171,10 @@ class CiceroStack(cdk.Stack):
             timeout=cdk.Duration.seconds(30),
             code=_lambda.Code.from_asset("./cicero/lambda"),
             role=lambda_role,
-            environment={"OUTPUT_BUCKET": translated_audio_bucket.bucket_name},
+            environment={
+                "OUTPUT_BUCKET": translated_audio_bucket.bucket_name,
+                "TABLE": video_table.table_name,
+            },
         )
 
         # TODO: Email should be pulled from S3 bucket meta data? we will pull from the environment for now
@@ -183,13 +197,15 @@ class CiceroStack(cdk.Stack):
             },
         )
 
-        # create s3 notification for lambda function
-        notification = aws_s3_notifications.LambdaDestination(transcribe_lambda)
+        # create s3 notification for transcribe lambda function
+        transcribe_notification = aws_s3_notifications.LambdaDestination(transcribe_lambda)
 
-        # create s3 notification for lambda function
-        new_translation_notification = aws_s3_notifications.LambdaDestination(
-            polly_lambda
-        )
+        # create s3 notification for translate lambda function
+        translate_notification = aws_s3_notifications.LambdaDestination(translate_lambda)
+
+        # create s3 notification for polly lambda function
+        polly_notification = aws_s3_notifications.LambdaDestination(polly_lambda)
+
         finished_video_notification = aws_s3_notifications.LambdaDestination(sns_lambda)
 
         # API Gateway add route
@@ -200,13 +216,15 @@ class CiceroStack(cdk.Stack):
         api.root.add_method("POST", video_upload_integration)
         # assign notification for the s3 event type
         video_upload_bucket.add_event_notification(
-            s3.EventType.OBJECT_CREATED, notification
+            s3.EventType.OBJECT_CREATED, transcribe_notification
         )
 
-        # TODO: Replace actual line with commented out line when actual transcripts are made
-        # translated_bucket.add_event_notification(
         transcribe_bucket.add_event_notification(
-            s3.EventType.OBJECT_CREATED, new_translation_notification
+            s3.EventType.OBJECT_CREATED, translate_notification, s3.NotificationKeyFilter(suffix='json')
+        )
+        
+        translated_bucket.add_event_notification(
+            s3.EventType.OBJECT_CREATED, polly_notification
         )
 
         finished_video_bucket.add_event_notification(
