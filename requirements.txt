@@ -4,3 +4,5 @@ aws_cdk.aws_s3_deployment==1.94.1
 aws_cdk.aws_s3_notifications==1.94.1
 aws_cdk.aws_apigateway==1.94.1
 aws_cdk.aws_dynamodb==1.94.1
+aws_cdk.ecs==1.94.1
+aws_cdk.ec2==1.94.1
