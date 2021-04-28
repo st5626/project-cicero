@@ -24,6 +24,7 @@
     print(response)
     ```
     This MUST be done for the sender email. The recipiant email must also be verified if you are using SES in sandbox mode.
+    Note: SES does not work on AWS Educate. Use a regular or free tier.
 
 6. Profit
 
