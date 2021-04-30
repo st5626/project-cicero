@@ -18,13 +18,9 @@ def main(event, context):
     key = record['s3']['object']['key']
     logger.info(key)
     job_uri = f"s3://{bucket}/{key}"
-    # job_name = f"Video_Transcribe_Job_{uuid.uuid4()}"
-    # job_name = str(uuid.uuid4())
     output_bucket = os.getenv('BUCKET')
     table_name = os.getenv("TABLE")
     table = dynamodb.Table(table_name)
-    # lookup_uuid = key.split('.')[0]
-
     table_record = table.get_item(
         Key={
             'uuid': key,
