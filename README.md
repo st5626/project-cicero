@@ -31,9 +31,44 @@
 For more information on how to add modules and documentation on modules check out the AWS [docs](https://docs.aws.amazon.com/cdk/latest/guide/work-with-cdk-python.html). Make sure any new modules are added to `requirements.txt` with correct versioning.
 
 
-## Language Codes
+## Supported Language Codes
 
-`arb | cmn-CN | cy-GB | da-DK | de-DE | en-AU | en-GB | en-GB-WLS | en-IN | en-US | es-ES | es-MX | es-US | fr-CA | fr-FR | is-IS | it-IT | ja-JP | hi-IN | ko-KR | nb-NO | nl-NL | pl-PL | pt-BR | pt-PT | ro-RO | ru-RU | sv-SE | tr-TR`
+| Language                  | Input Language Code | Target Language Code |
+| ------------------------- | ------------------- | -------------------- |
+| Arabic (Gulf / Modern)    | ar-AE / ar-SA       | arb                  |
+| Chinese (Mandarin)        | zh-CN               | cmn-CN               |
+| Danish                    | Input not supported | da-DK                |
+| Dutch                     | nl-NL               | nl-NL                |
+| English (Australian)      | en-AU               | en-AU                |
+| English (British)         | en-GB               | en-GB                |
+| English (Indian)          | en-IN               | Output not supported |
+| English (US)              | en-US               | en-US                |
+| Farsi Persian             | fa-IR               | Output not supported |
+| French                    | fr-FR               | fr-FR                |
+| French (Canadian)         | fr-CA               | fr-CA                |
+| German (Standard / Swiss) | de-DE / de-CH       | de-DE                |
+| Hebrew                    | he-IL               | Output not supported |
+| Hindi                     | hi-IN               | hi-IN                |
+| Icelandic                 | Input not supported | is-IS                |
+| Indonesian                | id-ID               | Output not supported |
+| Italian                   | it-IT               | it-IT                |
+| Japanese                  | ja - JP             | ja-JP                |
+| Korean                    | ko-KR               | ko-KR                |
+| Malaysian                 | ms-MY               | Output not supported |
+| Norwegian                 | Input not supported | nb-NO                |
+| Polish                    | Input not supported | pl-PL                |
+| Portugese (Brazilian)     | pt-BR               | pt-BR                |
+| Portugese (European)      | pt-PT               | pt-PT                |
+| Romanian                  | Input not supported | ro-RO                |
+| Russian                   | ru-RU               | ru-RU                |
+| Spanish (European)        | es-ES               | es-ES                |
+| Spanish (Mexican)         | Input not supported | es-MX                |
+| Spanish (US)              | es-US               | es-US                |
+| Swedish                   | Input not supported | sv-SE                |
+| Tamil                     | ta-IN               | Output not supported |
+| Telugu                    | te-IN               | Output not supported |
+| Turkish                   | tr-TR               | tr-TR                |
+| Welsh                     | Input not supported | cy-GB                |
 
 ## Synthesize and Deploy
 Stacks can be simply synthesized into Cloudformation templates or directly deployed from the command line.
