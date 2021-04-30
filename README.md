@@ -26,7 +26,9 @@
     This MUST be done for the sender email. The recipient email must also be verified if you are using SES in sandbox mode.
     Note: SES does not work on AWS Educate. Use a regular or free tier.
 
-6. Profit
+6. Make sure that Docker is running locally
+
+7. Profit
 
 For more information on how to add modules and documentation on modules check out the AWS [docs](https://docs.aws.amazon.com/cdk/latest/guide/work-with-cdk-python.html). Make sure any new modules are added to `requirements.txt` with correct versioning.
 

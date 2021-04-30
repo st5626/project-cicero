@@ -207,8 +207,8 @@ class CiceroStack(cdk.Stack):
             code=_lambda.Code.from_asset("./cicero/lambda"),
             role=lambda_role,
             environment={
-                "RECIEVER": "recipient@example.com",
-                "SENDER": "Sender Name <sender@example.com>",
+                "SENDER": "Sender Name <senderemail@email.com>",
+                "TABLE": video_table.table_name,
             },
         )
 
