@@ -71,6 +71,7 @@ class CiceroStack(cdk.Stack):
         video_table = dynamodb.Table(
             self,
             "VideoTable",
+            removal_policy=cdk.RemovalPolicy.DESTROY,
             partition_key=dynamodb.Attribute(
                 name="uuid", type=dynamodb.AttributeType.STRING
             ),

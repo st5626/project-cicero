@@ -48,24 +48,24 @@ def main(event, context):
     logger.info("textToSynthesize: " + str(textToSynthesize))
 
     output_bucket = os.getenv("OUTPUT_BUCKET")
-    print(output_bucket)
+    logger.info(output_bucket)
+
+    logger.info("[ " + TARGET_LANGUAGE +" | "+ TARGET_LANGUAGE.split("-")[0] +" ] ENGINE - VOICE: " + str(getEngine(TARGET_LANGUAGE.split("-")[0])) + " - " + str(getVoiceId(TARGET_LANGUAGE, polly)))
 
     synthesis_task = polly.start_speech_synthesis_task(
-        Engine="neural",  # 'standard'|'neural'
+        Engine=getEngine(TARGET_LANGUAGE.split("-")[0]),  # 'standard'|'neural'
         OutputFormat="mp3",
         OutputS3BucketName=output_bucket,
         Text=textToSynthesize,
-        VoiceId=getVoiceId(TARGET_LANGUAGE)
+        VoiceId=getVoiceId(TARGET_LANGUAGE, polly)
         # LanguageCode='en-AU',                     # 'arb'|'cmn-CN'|'cy-GB'|'da-DK'|'de-DE'|'en-AU'|'en-GB'|'en-GB-WLS'|'en-IN'|'en-US'|'es-ES'|'es-MX'|'es-US'|'fr-CA'|'fr-FR'|'is-IS'|'it-IT'|'ja-JP'|'hi-IN'|'ko-KR'|'nb-NO'|'nl-NL'|'pl-PL'|'pt-BR'|'pt-PT'|'ro-RO'|'ru-RU'|'sv-SE'|'tr-TR'
-        # SpeechMarkTypes=[],                       # ['sentence'|'ssml'|'viseme'|'word'],
-        # TextType='text',                          # 'ssml'|'text'
     )
 
     while synthesis_task["SynthesisTask"]["TaskStatus"] != "completed":
         synthesis_task = polly.get_speech_synthesis_task(
             TaskId=synthesis_task["SynthesisTask"]["TaskId"]
         )
-        print(synthesis_task["SynthesisTask"]["TaskStatus"])
+        logger.info(synthesis_task["SynthesisTask"]["TaskStatus"])
         time.sleep(5)
 
     ContainerOverrides = {
@@ -92,11 +92,11 @@ def main(event, context):
             },
         ]
     }
-    print(ContainerOverrides)
+    logger.info(ContainerOverrides)
     client = boto3.client("ecs")
     ec2 = boto3.resource("ec2")
     vpc = ec2.Vpc(os.getenv("VPC_ID"))
-    print("Invoking ECS task")
+    logger.info("Invoking ECS task")
     client.run_task(
         cluster=os.getenv("CLUSTER_ARN"),
         launchType="FARGATE",
@@ -110,16 +110,22 @@ def main(event, context):
         taskDefinition=os.getenv("TASK_DEFINITION_ARN"),
     )
 
+# Select which engine to use based on the target language
+def getEngine(targetLangCode):
+    if(targetLangCode in ["en", "pt", "es"]):
+        return "neural"
+    return "standard"
 
 # Select voice that works with target language
-def getVoiceId(targetLangCode):
-    # TODO: Figure out proper mapping
-    # Note this mapping is different depending on which engine you're using.
-    if targetLangCode == "es":
-        voiceId = "Penelope"
-    elif targetLangCode == "de":
-        voiceId = "Kevin"
-    else:
-        voiceId = "Kevin"
+# Mappings from https://docs.aws.amazon.com/polly/latest/dg/voicelist.html
+def getVoiceId(targetLangCode, client):
+    engine = "standard"
+    if(targetLangCode in ["en", "pt", "es"]):
+        engine = "neural"
+    response = client.describe_voices(
+        Engine=engine,
+        LanguageCode=targetLangCode,
+        IncludeAdditionalLanguageCodes=False,
+    )
+    return response['Voices'][0]['Name']
 
-    return voiceId
