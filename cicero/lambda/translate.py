@@ -31,8 +31,8 @@ def main(event, context):
         }
     )
     logger.info(table_record)
-    SOURCE_LANGUAGE = table_record['Item']['input_language'][:2]
-    TARGET_LANGUAGE = table_record['Item']['target_language'][:2]
+    SOURCE_LANGUAGE = table_record['Item']['input_language'].split('-')[0]
+    TARGET_LANGUAGE = table_record['Item']['target_language'].split('-')[0]
     if (TARGET_LANGUAGE == 'arb'){
         TARGET_LANGUAGE = 'ar'
     } else if (TARGET_LANGUAGE == 'cmn') {
