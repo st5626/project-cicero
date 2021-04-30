@@ -33,13 +33,13 @@ def main(event, context):
     logger.info(table_record)
     SOURCE_LANGUAGE = table_record['Item']['input_language'].split('-')[0]
     TARGET_LANGUAGE = table_record['Item']['target_language'].split('-')[0]
-    if (TARGET_LANGUAGE == 'arb'){
+    if TARGET_LANGUAGE == 'arb':
         TARGET_LANGUAGE = 'ar'
-    } else if (TARGET_LANGUAGE == 'cmn') {
+    elif TARGET_LANGUAGE == 'cmn':
         TARGET_LANGUAGE = 'zh'
-    } else if (TARGET_LANGUAGE == 'nb') {
+    elif TARGET_LANGUAGE == 'nb':
         TARGET_LANGUAGE = 'no'
-    }
+    
     textToSynthesize = json_content['results']['transcripts'][0]['transcript']
     lastPronunIdx = len(json_content['results']['items']) - 1
     # Get last pronunciation
