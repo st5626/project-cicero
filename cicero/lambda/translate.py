@@ -5,8 +5,6 @@ import logging
 import re
 
 def main(event, context):
-    # SOURCE_LANGUAGE = "en"
-    # TARGET_LANGUAGE = "de"
     translate = boto3.client('translate')
     s3 = boto3.resource('s3')
     dynamodb = boto3.resource("dynamodb")
@@ -35,6 +33,13 @@ def main(event, context):
     logger.info(table_record)
     SOURCE_LANGUAGE = table_record['Item']['input_language'][:2]
     TARGET_LANGUAGE = table_record['Item']['target_language'][:2]
+    if (TARGET_LANGUAGE == 'arb'){
+        TARGET_LANGUAGE = 'ar'
+    } else if (TARGET_LANGUAGE == 'cmn') {
+        TARGET_LANGUAGE = 'zh'
+    } else if (TARGET_LANGUAGE == 'nb') {
+        TARGET_LANGUAGE = 'no'
+    }
     textToSynthesize = json_content['results']['transcripts'][0]['transcript']
     lastPronunIdx = len(json_content['results']['items']) - 1
     # Get last pronunciation
