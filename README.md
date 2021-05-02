@@ -2,7 +2,11 @@
 
 ## Local Setup
 
-1. Ensure NodeJS is installed and the AWS CDK toolkit is set up [correctly](https://docs.aws.amazon.com/cdk/latest/guide/work-with.html#work-with-prerequisites). To get your AWS credentials with your educate account click the account details button before signing in and copy and paste the CLI details into the .aws folder.
+1. Ensure NodeJS is installed and the AWS CDK toolkit is set up [correctly](https://docs.aws.amazon.com/cdk/latest/guide/work-with.html#work-with-prerequisites). To get your AWS credentials with your educate account click the account details button before signing in and copy and paste the CLI details into the .aws folder. 
+2. If you run into errors this project was successfully deployed with version 1.94.1 of the Node aws_cdk library. To explicitly install it run:
+   
+   `> npm install -g aws-cdk@1.94.1`
+4. Install the CDK toolkit version
    ![](https://user-images.githubusercontent.com/31460379/112003536-5d314f80-8af7-11eb-8912-1a53db51ce73.png)
     `> vim ~/.aws/credentials`
 2. Make sure Python 3.6 or higher is [installed](https://www.python.org/downloads/) along with pip and virtualenv packages.
